@@ -134,8 +134,13 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202003081405345_MigrateDB.cs" />
+    <Compile Include="Migrations\202003081405345_MigrateDB.designer.cs">
+      <DependentUpon>202003081405345_MigrateDB.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Data\Db.cs" />
-    <Compile Include="Models\Data\PagesDTO.cs" />
+    <Compile Include="Models\Data\PagesProduct.cs" />
     <Compile Include="Models\ViewModels\Pages\PageVM.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -281,9 +286,8 @@
     <Content Include="Scripts\popper-utils.js.map" />
     <Content Include="Views\Dashboard\Index.cshtml" />
     <Content Include="Views\Pages\Index.cshtml" />
-    <Content Include="Views\Pages\AddPage.cshtml" />
+    <Content Include="Views\Pages\AddProduct.cshtml" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
@@ -294,6 +298,11 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\index.d.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\202003081405345_MigrateDB.resx">
+      <DependentUpon>202003081405345_MigrateDB.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

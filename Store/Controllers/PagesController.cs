@@ -19,7 +19,7 @@ namespace Store.Controllers
             // Инициализируем список
             using (Db db = new Db())
             {
-                pagesList = db.Pages.ToArray().OrderBy(x => x.Sorting).Select(x => new PageVM(x)).ToList();
+                pagesList = db.Product.ToArray().Select(x => new PageVM(x)).ToList();
             }
                 // Возвращаем список в представление
 
@@ -27,13 +27,13 @@ namespace Store.Controllers
         }
         // GET: Pages/AddPage
         [HttpGet]
-        public ActionResult AddPage()
+        public ActionResult AddProduct()
         {
             return View();
         }
         // POST: Pages/AddPage
         [HttpPost]
-        public ActionResult AddPage(PageVM model)
+        public ActionResult AddProduct(PageVM model)
         {
             //проверка модели на валидность
             if(!ModelState.IsValid)
@@ -41,43 +41,29 @@ namespace Store.Controllers
                 return View(model);
             }
             using (Db db = new Db())
-            {
-                //Объявляем переменную для краткого описания(slug)
-                string slug;
-
+            {                             
                 // Инициализируем класс PageDTO
-                PagesDTO dto = new PagesDTO();
+                PagesProduct dto = new PagesProduct();
 
                 //Присвоить заголовок модели
-                dto.Title = model.Title.ToUpper();
-                //Проверяем есть ли краткое описание, если нет, присваиваем его
-                if(string.IsNullOrWhiteSpace(model.Slug))
-                {
-                    slug = model.Title.Replace(" ", "-").ToLower();
-                }
-                else
-                {
-                    slug = model.Slug.Replace(" ", "-").ToLower();
-                }
+                dto.Title = model.Title;
+              
+               
                 //Проверяем уникальность заголовка и краткого описания
-                if(db.Pages.Any(x => x.Title == model.Title))
+                if(db.Product.Any(x => x.Title == model.Title))
                 {
                     ModelState.AddModelError("", "That title already exist");
                     return View(model);
                 }
-                else if(db.Pages.Any(x => x.Slug == model.Slug))
-                {
-                    ModelState.AddModelError("", "That slug already exist");
-                    return View(model);
-                }
+               
 
                 //Присваиваем оставшиеся значения модели
-                dto.Slug = slug;
+              
                 dto.Body = model.Body;
-                dto.HasSidebar = model.HasSidebar;
-                dto.Sorting = 100;
+                dto.Price = model.Price;
+               
                 //Сохраняем модель в базу
-                db.Pages.Add(dto);
+                db.Product.Add(dto);
                 db.SaveChanges();
             }
             //Выдать сообщение пользовотелю о результате через TempData

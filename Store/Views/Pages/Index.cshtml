@@ -1,10 +1,10 @@
 ﻿@model IEnumerable<Store.Models.ViewModels.Pages.PageVM>
 
 @{
-    ViewBag.Title = "Pages";
+    ViewBag.Title = "Products";
 }
 
-    <h2>Pages</h2>
+    <h2>Products</h2>
 
 @if (TempData["SM"] != null)
 {
@@ -14,7 +14,7 @@
 }
 
 <p>
-    @Html.ActionLink("Create New Page", "AddPage","",new { @class = "btn btn-success"})
+    @Html.ActionLink("Create New Product", "AddProduct","",new { @class = "btn btn-success"})
 </p>
 <table class="table">
     <tr>
@@ -22,11 +22,11 @@
            Title
         </th>
         <th>
-            Slug
+            Discription
         </th>
        
         <th>
-           Sidebar
+           Price
         </th>
         <th></th>
     </tr>
@@ -37,11 +37,11 @@
             @Html.DisplayFor(modelItem => item.Title)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Slug)
+            @Html.DisplayFor(modelItem => item.Body)
         </td>
        
         <td>
-            @Html.DisplayFor(modelItem => item.HasSidebar)
+            @Html.DisplayFor(modelItem => item.Price)
         </td>
         <td>
             @Html.ActionLink("Edit", "EditPage", new { id=item.Id }) |
