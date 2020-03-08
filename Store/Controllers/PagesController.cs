@@ -72,5 +72,49 @@ namespace Store.Controllers
             return RedirectToAction("Index");
                 
         }
+        // GET: Pages/EditPage
+        [HttpGet]
+        public ActionResult EditProduct(int id)
+        {
+            PageVM model;
+            using(Db db = new Db())
+            {
+                PagesProduct dto = db.Product.Find(id);
+                if(dto == null)
+                {
+                    return Content("The product does not exist");
+                }
+                model = new PageVM(dto);
+                
+            }
+            return View(model);
+        }
+        // POST: Pages/EditPage
+        [HttpPost]
+        public ActionResult EditProduct(PageVM model)
+        {
+            if(!ModelState.IsValid )
+            {
+                return View(model);
+            }
+            int id = model.Id;
+
+            using (Db db = new Db())
+            {
+                PagesProduct dto = db.Product.Find(id);               
+                dto.Title = model.Title;
+                if (db.Product.Where(x => x.Id != id).Any(x => x.Title == model.Title))
+                {
+                    ModelState.AddModelError("", "That title already exist");
+                    return View(model);
+                }
+                dto.Body = model.Body;
+                dto.Price = model.Price;
+                db.SaveChanges();
+            }
+            TempData["SM"] = "You have edited the product";
+            return RedirectToAction("EditProduct");
+        }
     }
+  
 }
