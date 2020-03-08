@@ -288,6 +288,7 @@
     <Content Include="Views\Pages\Index.cshtml" />
     <Content Include="Views\Pages\AddProduct.cshtml" />
     <Content Include="Views\Pages\EditProduct.cshtml" />
+    <Content Include="Views\Pages\ProductDetails.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

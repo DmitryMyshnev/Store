@@ -115,6 +115,35 @@ namespace Store.Controllers
             TempData["SM"] = "You have edited the product";
             return RedirectToAction("EditProduct");
         }
+        [HttpGet]
+        public ActionResult ProductDetails(int id)
+        {
+            PageVM model;
+            using (Db db = new Db())
+            {
+                PagesProduct dto = db.Product.Find(id);
+                if (dto == null)
+                {
+                    return Content("The product does not exist");
+                }
+                model = new PageVM(dto);
+
+            }
+            return View(model);
+        }
+       
+        public ActionResult DeleteProduct(int id)
+        {          
+            using (Db db = new Db())
+            {
+                PagesProduct dto = db.Product.Find(id);
+                db.Product.Remove(dto);
+                db.SaveChanges();
+
+            }
+            return RedirectToAction("Index");
+        }
+
     }
-  
+
 }
