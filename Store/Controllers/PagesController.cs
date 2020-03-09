@@ -19,7 +19,7 @@ namespace Store.Controllers
             // Инициализируем список
             using (Db db = new Db())
             {
-                pagesList = db.Product.ToArray().Select(x => new PageVM(x)).ToList();
+                pagesList = db.Products.ToArray().Select(x => new PageVM(x)).ToList();
             }
                 // Возвращаем список в представление
 
@@ -50,20 +50,17 @@ namespace Store.Controllers
               
                
                 //Проверяем уникальность заголовка и краткого описания
-                if(db.Product.Any(x => x.Title == model.Title))
+                if(db.Products.Any(x => x.Title == model.Title))
                 {
                     ModelState.AddModelError("", "That title already exist");
                     return View(model);
-                }
-               
-
+                }               
                 //Присваиваем оставшиеся значения модели
               
                 dto.Body = model.Body;
-                dto.Price = model.Price;
-               
+                dto.Price = model.Price;               
                 //Сохраняем модель в базу
-                db.Product.Add(dto);
+                db.Products.Add(dto);
                 db.SaveChanges();
             }
             //Выдать сообщение пользовотелю о результате через TempData
@@ -79,7 +76,7 @@ namespace Store.Controllers
             PageVM model;
             using(Db db = new Db())
             {
-                PagesProduct dto = db.Product.Find(id);
+                PagesProduct dto = db.Products.Find(id);
                 if(dto == null)
                 {
                     return Content("The product does not exist");
@@ -101,9 +98,9 @@ namespace Store.Controllers
 
             using (Db db = new Db())
             {
-                PagesProduct dto = db.Product.Find(id);               
+                PagesProduct dto = db.Products.Find(id);               
                 dto.Title = model.Title;
-                if (db.Product.Where(x => x.Id != id).Any(x => x.Title == model.Title))
+                if (db.Products.Where(x => x.Id != id).Any(x => x.Title == model.Title))
                 {
                     ModelState.AddModelError("", "That title already exist");
                     return View(model);
@@ -121,7 +118,7 @@ namespace Store.Controllers
             PageVM model;
             using (Db db = new Db())
             {
-                PagesProduct dto = db.Product.Find(id);
+                PagesProduct dto = db.Products.Find(id);
                 if (dto == null)
                 {
                     return Content("The product does not exist");
@@ -136,11 +133,12 @@ namespace Store.Controllers
         {          
             using (Db db = new Db())
             {
-                PagesProduct dto = db.Product.Find(id);
-                db.Product.Remove(dto);
+                PagesProduct dto = db.Products.Find(id);
+                db.Products.Remove(dto);
                 db.SaveChanges();
 
             }
+            TempData["SM"] = "You have deleted product";
             return RedirectToAction("Index");
         }
 

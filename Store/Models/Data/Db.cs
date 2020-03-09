@@ -8,6 +8,7 @@ namespace Store.Models.Data
 {
     public class Db :DbContext
     {
-        public DbSet<PagesProduct> Product { get; set; }
+        public DbSet<PagesProduct> Products { get; set; }
+        public DbSet<CategoryProduct> Categories { get; set; }
     }
 }
