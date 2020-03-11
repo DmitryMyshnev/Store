@@ -5,31 +5,55 @@
 }
 
 <h2>Categories</h2>
+@if (TempData["SM"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SM"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger ">
+        @TempData["Error"]
+    </div>
+}
 
-<div class="new-cat">
+@*<div class="new-cat">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-default">Category Name</span>
+            </div>
+            <input type="text" id="newcatname" class="form-control" />
+        </div>
+        <p>
+            <a href="#" id="newcata" class="btn btn-success"> Add a new category. </a>
+            <span class="ajax-text">
+                <img src="~/Content/Images/ajax-loader.gif" height="50" />
+            </span>
+        </p>
+    </div>*@
+@using (Html.BeginForm("AddNewCategory", "Shop", FormMethod.Post))
+{
+
     <div class="input-group mb-3">
         <div class="input-group-prepend">
-            <span class="input-group-text" id="inputGroup-sizing-default">Category Name</span>
+            <span class="input-group-text">Category Name</span>
         </div>
-        <input type="text" id="newcatname" class="form-control" />
-        
+        <input type="text" name="Name" class="form-control" id="enterbox"/>
     </div>
-    <a>
-        <a href="#" id="newcata" class="btn btn-success"> Add a new category.  </a>
-        @*<input type="button" value="Add New Category" class="btn btn-success" />*@
-       
-        <span class="ajax-text">
-            <img src="~/Content/Images/ajax-loader.gif" height="50" />
-        </span>
-    </a>
-</div>
+    <div>
+
+        <input type="submit" value="Addd new category" class="btn btn-success" />
+    </div>
+
+}
 @if (!Model.Any())
 {
     <h1 class="text-center" There are no categories.></h1>
 }
 else
 {
-    <table class="table">
+    <table class="table" id="tablepage">
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.Name)
@@ -40,13 +64,13 @@ else
 
         @foreach (var item in Model)
         {
-            <tr id="id_@item.Id">
-                <td>
-                    @Html.EditorFor(modelItem => item.Name, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+            <tr id="id_@item.Id">               
+                <td>                  
+                    <input type="text" name="Name" class="form-control" readonly="readonly" id="@item.Id" value="@item.Name" />
                 </td>
 
                 <td>
-
+                    <input type="button" value="Edit" class="btn btn-success" data-value="@item.Id" />
                     @Html.ActionLink("Delete", "DeleteCategory", new { id = item.Id }, new { @class = "delete btn btn-danger" })
                 </td>
             </tr>
@@ -54,78 +78,38 @@ else
 
     </table>
 }
+
 @section Scripts
 {
-    <script>
+    <script type="text/javascript" >
         $(function () {
-            // Add new category
-          var newCatA = $("a#newcata"); /*Класс линка добавления*/
-            var newCatTextInput = $("#newcatname"); /*Класс текстового поля ввода*/
-            var ajaxText = $("span.ajax-text"); /*Класс картинки загрузки*/
-            var table = $("table#pages tbody"); /*Класс таблицы вывода*/
-
-            /* Пишем функцию на отлов нажатия Enter */
-            newCatTextInput.keyup(function (e) {
-                if (e.keyCode == 13) {
-                    newCatA.click();
-                }
+         
+            // Confirm product delete
+                  var table = $("table#pages tbody"); 
+                  var originalTextBoxValue;
+            $("a.delete").click(function () {
+                if (!confirm("Confirm product deletion")) return false;
             });
-
-            /* Пишем функцию Click */
-            newCatA.click(function (e) {
-                e.preventDefault();
-
-                var catName = newCatTextInput.val();
-
-                if (catName.length < 3) {
-                    alert("Category name must be at least 3 characters long.");
-                    return false;
-                }
-
-                ajaxText.show();
-
-                var url = "/shop/AddNewCategory";
-
-                $.post(url, { catName: catName }, function (data) {
-                    var response = data.trim();
-
-                    if (response == "titletaken") {
-                        ajaxText.html("<span class='alert alert-danger'>That title is taken!</span>");
-                        setTimeout(function () {
-                            ajaxText.fadeOut("fast", function () {
-                                ajaxText.html("<img src='/Content/Images/ajax-loader.gif' height='50' />");
-                            });
-                        }, 2000);
-                        return false;
+            $(document).ready(function () {  
+               
+                $("table#tablepage :button").click(function () {
+                    var input_id = "#" + $(this).attr("data-value");
+                    if ($(this).val() == "Edit") {
+                        //Get input and remove Readonly
+                        
+                        $(input_id).attr("readonly", false);
+                        //Set Value to Save
+                        $(this).val("Save");
+                    } else {
+                        var input_text = $(input_id).val();
+                        console.log(input_text);
+                        $(input_id).attr("readonly", true);
+                        $(this).val("Edit");
                     }
-                    else {
-                        if (!$("table#pages").length) {
-                            location.reload();
-                        }
-                        else {
-                            ajaxText.html("<span class='alert alert-success'>The category has been added!</span>");
-                            setTimeout(function () {
-                                ajaxText.fadeOut("fast", function () {
-                                    ajaxText.html("<img src='/Content/Images/ajax-loader.gif' height='50' />");
-                                });
-                            }, 2000);
-
-                            newCatTextInput.val("");
-
-                            var toAppend = $("table#pages tbody tr:last").clone();
-                            toAppend.attr("id", "id_" + data);
-                            toAppend.find("#item_Name").val(catName);
-                            toAppend.find("a.delete").attr("href", "/admin/shop/DeleteCategory/" + data);
-                            table.append(toAppend);
-                            table.sortable("refresh");
-                        }
-                    }
-                });
-            });
-          // Confirm product delete
-          $("a.delete").click(function () {
-              if (!confirm("Confirm product deletion")) return false;
-          });
-      });
+                  });
+                
+                    });
+          
+        });
     </script>
 }
