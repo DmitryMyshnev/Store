@@ -7,17 +7,17 @@
 <h2>Categories</h2>
 @if (TempData["SM"] != null)
 {
-    <div class="alert alert-success">
+    <div class="alert alert-success" id="addCatSuccess">
         @TempData["SM"]
     </div>
 }
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger ">
+    <div class="alert alert-danger" id="addCatFail">
         @TempData["Error"]
     </div>
 }
-
+<div  class="alert alert-success" id="succes" hidden></div>
 @*<div class="new-cat">
         <div class="input-group mb-3">
             <div class="input-group-prepend">
@@ -43,7 +43,7 @@
     </div>
     <div>
 
-        <input type="submit" value="Addd new category" class="btn btn-success" />
+        <input type="submit" value="Addd new category" class="btn btn-success"  />
     </div>
 
 }
@@ -72,6 +72,7 @@ else
                 <td>
                     <input type="button" value="Edit" class="btn btn-success" data-value="@item.Id" />
                     @Html.ActionLink("Delete", "DeleteCategory", new { id = item.Id }, new { @class = "delete btn btn-danger" })
+                    <div id="res"></div>
                 </td>
             </tr>
         }
@@ -90,10 +91,11 @@ else
             $("a.delete").click(function () {
                 if (!confirm("Confirm product deletion")) return false;
             });
-            $(document).ready(function () {  
+              $(document).ready(function () {  
                
                 $("table#tablepage :button").click(function () {
-                    var input_id = "#" + $(this).attr("data-value");
+                       var input_text_id = $(this).attr("data-value");
+                       var input_id = "#" + input_text_id;
                     if ($(this).val() == "Edit") {
                         //Get input and remove Readonly
                         
@@ -102,14 +104,36 @@ else
                         $(this).val("Save");
                     } else {
                         var input_text = $(input_id).val();
-                        console.log(input_text);
+                    
+                       // console.log(input_text);
+                         console.log(input_id);
                         $(input_id).attr("readonly", true);
                         $(this).val("Edit");
+                        $(this).load('@Url.Action("EditCategory","Shop")?name=' + input_text + '&id=' + input_text_id, function( response, status, xhr ) {
+                            if (status == "error") {
+                                var msg = "Sorry but there was an error: ";
+                                $("#error").html(msg + xhr.status + " " + xhr.statusText);
+                            } else if (response == "ok") {
+                                msg = "The category name has been changed!";
+                               
+                                $("#succes").html(msg);
+                                $("#succes").attr("hidden", false);
+                                setTimeout(function () { $("#succes").attr("hidden", true); }, 2000);
+                              
+                               
+                            } else {
+
+                            }
+                        });
+                        
                     }
-                  });
-                
-                    });
-          
+                });
+                  setTimeout(function () { $('#addCatSuccess').attr("hidden",true) }, 2000);
+                  setTimeout(function () { $('#addCatFail').attr("hidden",true) }, 2000);
+                      
+                    
+               });
+          $()
         });
     </script>
 }

@@ -48,7 +48,7 @@ namespace Store.Controllers
                 {
                     // ModelState.AddModelError("Name", "That title already exist");
                     TempData["Error"] = "That title already exist";
-                    return RedirectToAction("Categories");
+                   return RedirectToAction("Categories");
                 }
                
                 //Присваиваем оставшиеся значения модели
@@ -63,6 +63,7 @@ namespace Store.Controllers
             TempData["SM"] = "You have added a new page!";
             //Переадресовываем пользователя на метод INDEX
             return RedirectToAction("Categories");
+           
           
         }
         
@@ -78,9 +79,28 @@ namespace Store.Controllers
             TempData["SM"] = "You have deleted product";
             return RedirectToAction("Categories");
         }
-        public string EditCategory(string name, int id)
+        public string EditCategory(string name,int id)
         {
-            return name;
+            using (Db db = new Db())
+            {
+
+                // Инициализируем класс PageDTO
+                CategoryProduct dto = db.Categories.Find(id);
+
+                //Присвоить заголовок модели              
+                dto.Name = name;
+                            
+                //Присваиваем оставшиеся значения модели
+
+                dto.Slug = name.Replace(" ", "-").ToLower();
+
+                //Сохраняем модель в базу               
+                db.SaveChanges();
+            }
+            //Выдать сообщение пользовотелю о результате через TempData
+            TempData["SM"] = "The category name has been changed!";
+            //Переадресовываем пользователя на метод INDEX
+            return "ok";         
         }
     }
 }
