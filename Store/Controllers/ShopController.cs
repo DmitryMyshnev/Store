@@ -1,4 +1,5 @@
 ﻿using Store.Models.Data;
+using Store.Models.ViewModels.Pages;
 using Store.Models.ViewModels.Shop;
 using System;
 using System.Collections.Generic;
@@ -101,6 +102,53 @@ namespace Store.Controllers
             TempData["SM"] = "The category name has been changed!";
             //Переадресовываем пользователя на метод INDEX
             return "ok";         
+        }
+        [HttpGet]
+        public ActionResult AddProduct()
+        {
+            PageVM model = new PageVM();
+               using(Db db = new Db())
+            {
+                model.Categories = new SelectList(db.Categories.ToList(), dataValueField:"id",dataTextField: "Name");
+            }
+            return View(model);
+        }
+        [HttpPost]
+        public ActionResult AddProduct(PageVM model, HttpPostedFileBase file)
+        {
+            if(!ModelState.IsValid)
+            {
+                using(Db db = new Db())
+                {
+                    model.Categories = new SelectList(db.Categories.ToList(), dataValueField: "Id", dataTextField: "Name");
+                    return View(model);
+                }
+            }
+            using (Db db = new Db())
+            {
+                if(db.Products.Any(x =>x.Name == model.Name))
+                {
+                    model.Categories = new SelectList(db.Categories.ToList(), dataValueField: "Id", dataTextField: "Name");
+                    ModelState.AddModelError("", "This proudct name is taken!");
+                    return View(model);
+                }
+            }
+            int id;
+            using (Db db = new Db())
+            {
+                PagesProduct product = new PagesProduct();
+                product.Name = model.Name;
+                product.Slug = model.Slug;
+                product.Description = model.Description;
+                product.Price = model.Price;
+                product.CategoryId = model.CategoryId;
+                CategoryProduct category = db.Categories.FirstOrDefault(x => x.Id == model.CategoryId);
+                product.CategoryName = category.Name;
+                db.Products.Add(product);
+                db.SaveChanges();
+                id = product.Id;
+            }
+                return RedirectToAction("AddProduct");
         }
     }
 }

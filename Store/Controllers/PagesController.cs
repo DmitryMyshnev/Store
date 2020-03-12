@@ -27,13 +27,13 @@ namespace Store.Controllers
         }
         // GET: Pages/AddPage
         [HttpGet]
-        public ActionResult AddProduct()
+        public ActionResult AddPage()
         {
             return View();
         }
         // POST: Pages/AddPage
         [HttpPost]
-        public ActionResult AddProduct(PageVM model)
+        public ActionResult AddPage(PageVM model)
         {
             //проверка модели на валидность
             if(!ModelState.IsValid)
@@ -46,19 +46,21 @@ namespace Store.Controllers
                 PagesProduct dto = new PagesProduct();
 
                 //Присвоить заголовок модели
-                dto.Title = model.Title;
+                dto.Name = model.Name;
               
                
                 //Проверяем уникальность заголовка и краткого описания
-                if(db.Products.Any(x => x.Title == model.Title))
+                if(db.Products.Any(x => x.Name == model.Name))
                 {
                     ModelState.AddModelError("", "That title already exist");
                     return View(model);
                 }               
                 //Присваиваем оставшиеся значения модели
               
-                dto.Body = model.Body;
-                dto.Price = model.Price;               
+                dto.Slug = model.Slug;
+                dto.Description = model.Description;
+                dto.Price = model.Price;
+                dto.CategoryName = model.CategoryName;
                 //Сохраняем модель в базу
                 db.Products.Add(dto);
                 db.SaveChanges();
@@ -99,13 +101,13 @@ namespace Store.Controllers
             using (Db db = new Db())
             {
                 PagesProduct dto = db.Products.Find(id);               
-                dto.Title = model.Title;
-                if (db.Products.Where(x => x.Id != id).Any(x => x.Title == model.Title))
+                dto.Name = model.Name;
+                if (db.Products.Where(x => x.Id != id).Any(x => x.Name == model.Name))
                 {
                     ModelState.AddModelError("", "That title already exist");
                     return View(model);
                 }
-                dto.Body = model.Body;
+                dto.Slug = model.Slug;
                 dto.Price = model.Price;
                 db.SaveChanges();
             }

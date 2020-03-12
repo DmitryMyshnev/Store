@@ -18,7 +18,7 @@
 </a>
 @if (!Model.Any())
 {
-<h1 class="text-center">There are no pages</h1>
+<h1 class="text-center">There are no product</h1>
 }
 else
 {
@@ -39,24 +39,30 @@ else
 
 @foreach (var item in Model)
 {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Title)
-        </td>
+<tr>
+    <td>
+        @Html.DisplayFor(modelItem => item.Name)
+    </td>
 
-        <td>
-            @Html.DisplayFor(modelItem => item.Body)
-        </td>
-       
-        <td>
-            @Html.DisplayFor(modelItem => item.Price)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "EditProduct", new { id = item.Id }) |
-            @Html.ActionLink("Details", "ProductDetails", new { id = item.Id }) |
-            @Html.ActionLink("Delete", "DeleteProduct", new { id = item.Id }, new { @class = "delete" })
-        </td>
-    </tr>
+    <td>
+        @Html.DisplayFor(modelItem => item.Slug)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Description)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Price)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.CategoryName)
+    </td>
+    
+    <td>
+        @Html.ActionLink("Edit", "EditProduct", new { id = item.Id }) |
+        @Html.ActionLink("Details", "ProductDetails", new { id = item.Id }) |
+        @Html.ActionLink("Delete", "DeleteProduct", new { id = item.Id }, new { @class = "delete" })
+    </td>
+</tr>
 }
 
 </table>
