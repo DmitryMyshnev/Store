@@ -19,7 +19,7 @@ namespace Store.Controllers
             // Инициализируем список
             using (Db db = new Db())
             {
-                pagesList = db.Products.ToArray().Select(x => new PageVM(x)).ToList();
+                pagesList = db.Pages.ToArray().Select(x => new PageVM(x)).ToList();
             }
                 // Возвращаем список в представление
 
@@ -33,24 +33,25 @@ namespace Store.Controllers
         }
         // POST: Pages/AddPage
         [HttpPost]
+        [ValidateAntiForgeryTokenAttribute]
         public ActionResult AddPage(PageVM model)
         {
             //проверка модели на валидность
-            if(!ModelState.IsValid)
+            if(!ModelState.IsValid || model == null)
             {
                 return View(model);
             }
             using (Db db = new Db())
             {                             
                 // Инициализируем класс PageDTO
-                PagesProduct dto = new PagesProduct();
+                Page dto = new Page();
 
                 //Присвоить заголовок модели
-                dto.Name = model.Name;
+                dto.Title = model.Title;
               
                
                 //Проверяем уникальность заголовка и краткого описания
-                if(db.Products.Any(x => x.Name == model.Name))
+                if(db.Pages.Any(x => x.Title == model.Title))
                 {
                     ModelState.AddModelError("", "That title already exist");
                     return View(model);
@@ -58,11 +59,10 @@ namespace Store.Controllers
                 //Присваиваем оставшиеся значения модели
               
                 dto.Slug = model.Slug;
-                dto.Description = model.Description;
-                dto.Price = model.Price;
-                dto.CategoryName = model.CategoryName;
+                dto.Body = model.Body;
+               
                 //Сохраняем модель в базу
-                db.Products.Add(dto);
+                db.Pages.Add(dto);
                 db.SaveChanges();
             }
             //Выдать сообщение пользовотелю о результате через TempData
@@ -73,12 +73,12 @@ namespace Store.Controllers
         }
         // GET: Pages/EditPage
         [HttpGet]
-        public ActionResult EditProduct(int id)
+        public ActionResult EditPage(int id)
         {
             PageVM model;
             using(Db db = new Db())
             {
-                PagesProduct dto = db.Products.Find(id);
+                Page dto = db.Pages.Find(id);
                 if(dto == null)
                 {
                     return Content("The product does not exist");
@@ -90,7 +90,8 @@ namespace Store.Controllers
         }
         // POST: Pages/EditPage
         [HttpPost]
-        public ActionResult EditProduct(PageVM model)
+        [ValidateAntiForgeryTokenAttribute]
+        public ActionResult EditPage(PageVM model)
         {
             if(!ModelState.IsValid )
             {
@@ -100,27 +101,27 @@ namespace Store.Controllers
 
             using (Db db = new Db())
             {
-                PagesProduct dto = db.Products.Find(id);               
-                dto.Name = model.Name;
-                if (db.Products.Where(x => x.Id != id).Any(x => x.Name == model.Name))
+                Page dto = db.Pages.Find(id);               
+                dto.Title = model.Title;
+                if (db.Pages.Where(x => x.Id != id).Any(x => x.Title == model.Title))
                 {
                     ModelState.AddModelError("", "That title already exist");
                     return View(model);
                 }
                 dto.Slug = model.Slug;
-                dto.Price = model.Price;
+                dto.Body = model.Body;
                 db.SaveChanges();
             }
             TempData["SM"] = "You have edited the product";
             return RedirectToAction("EditProduct");
         }
         [HttpGet]
-        public ActionResult ProductDetails(int id)
+        public ActionResult PagetDetails(int id)
         {
             PageVM model;
             using (Db db = new Db())
             {
-                PagesProduct dto = db.Products.Find(id);
+                Page dto = db.Pages.Find(id);
                 if (dto == null)
                 {
                     return Content("The product does not exist");
@@ -130,13 +131,14 @@ namespace Store.Controllers
             }
             return View(model);
         }
-       
-        public ActionResult DeleteProduct(int id)
+        [HttpPost]
+        [ValidateAntiForgeryTokenAttribute]
+        public ActionResult DeletePage(int id)
         {          
             using (Db db = new Db())
             {
-                PagesProduct dto = db.Products.Find(id);
-                db.Products.Remove(dto);
+                Page dto = db.Pages.Find(id);
+                db.Pages.Remove(dto);
                 db.SaveChanges();
 
             }

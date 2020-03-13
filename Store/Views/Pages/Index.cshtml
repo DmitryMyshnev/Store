@@ -14,7 +14,7 @@
 }
 
 <a>
-    @Html.ActionLink("Create New Product", "AddProduct","",new { @class = "btn btn-success"})
+    @Html.ActionLink("Create New Page", "AddPage","",new { @class = "btn btn-success"})
 </a>
 @if (!Model.Any())
 {
@@ -28,11 +28,11 @@ else
            Title
         </th>
         <th>
-            Discription
+            Slug
         </th>
        
         <th>
-           Price
+           Body
         </th>
         <th></th>
     </tr>
@@ -41,21 +41,17 @@ else
 {
 <tr>
     <td>
-        @Html.DisplayFor(modelItem => item.Name)
+        @Html.DisplayFor(modelItem => item.Title)
     </td>
 
     <td>
         @Html.DisplayFor(modelItem => item.Slug)
     </td>
     <td>
-        @Html.DisplayFor(modelItem => item.Description)
+        @Html.DisplayFor(modelItem => item.Body)
     </td>
-    <td>
-        @Html.DisplayFor(modelItem => item.Price)
-    </td>
-    <td>
-        @Html.DisplayFor(modelItem => item.CategoryName)
-    </td>
+    
+   
     
     <td>
         @Html.ActionLink("Edit", "EditProduct", new { id = item.Id }) |

@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Store.Models.Data
 {   [Table("tblProducts")]
-    public class PagesProduct
+    public class Product
     {
         [Key]
         public int Id { get; set; }

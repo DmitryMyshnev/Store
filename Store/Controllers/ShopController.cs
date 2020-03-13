@@ -1,10 +1,14 @@
-﻿using Store.Models.Data;
+﻿using PagedList;
+using Store.Models.Data;
 using Store.Models.ViewModels.Pages;
 using Store.Models.ViewModels.Shop;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Web;
+using System.Web.Helpers;
 using System.Web.Mvc;
 
 namespace Store.Controllers
@@ -12,6 +16,7 @@ namespace Store.Controllers
     public class ShopController : Controller
     {
         // GET: Shop
+        [HttpGet]
         public ActionResult Categories()
         {
             List<CategoryVM> categoryVMList;
@@ -27,10 +32,12 @@ namespace Store.Controllers
             return View();
         }
         [HttpPost]
+        [ValidateAntiForgeryTokenAttribute]
         public ActionResult AddNewCategory(string name)
         {
             // string id;
-            if (name.Length == 0 || name.StartsWith(" "))
+            
+            if (name.Length == 0 || name.StartsWith(" ", StringComparison.CurrentCulture))
             {
                 TempData["Error"] = "Title is empty";
                 return RedirectToAction("Categories");
@@ -93,7 +100,7 @@ namespace Store.Controllers
                             
                 //Присваиваем оставшиеся значения модели
 
-                dto.Slug = name.Replace(" ", "-").ToLower();
+                dto.Slug = name.Replace(" ", "-").ToUpperInvariant ();
 
                 //Сохраняем модель в базу               
                 db.SaveChanges();
@@ -106,7 +113,7 @@ namespace Store.Controllers
         [HttpGet]
         public ActionResult AddProduct()
         {
-            PageVM model = new PageVM();
+            ProductVM model = new ProductVM();
                using(Db db = new Db())
             {
                 model.Categories = new SelectList(db.Categories.ToList(), dataValueField:"id",dataTextField: "Name");
@@ -114,7 +121,8 @@ namespace Store.Controllers
             return View(model);
         }
         [HttpPost]
-        public ActionResult AddProduct(PageVM model, HttpPostedFileBase file)
+        [ValidateAntiForgeryTokenAttribute]
+        public ActionResult AddProduct(ProductVM model, HttpPostedFileBase file)
         {
             if(!ModelState.IsValid)
             {
@@ -136,9 +144,9 @@ namespace Store.Controllers
             int id;
             using (Db db = new Db())
             {
-                PagesProduct product = new PagesProduct();
+                Product product = new Product();
                 product.Name = model.Name;
-                product.Slug = model.Slug;
+                product.Slug = model.Name.Replace(" ", "-").ToLower(CultureInfo.CurrentCulture); ;
                 product.Description = model.Description;
                 product.Price = model.Price;
                 product.CategoryId = model.CategoryId;
@@ -148,7 +156,80 @@ namespace Store.Controllers
                 db.SaveChanges();
                 id = product.Id;
             }
-                return RedirectToAction("AddProduct");
+            TempData["SM"] = "You have added a product!";
+            ///////////////////////////////////////////////
+            var originalDirectory = new DirectoryInfo(string.Format(CultureInfo.InvariantCulture,$"{Server.MapPath(@"\")}Images\\Uploads"));
+            var pathString1 = Path.Combine(originalDirectory.ToString(), "Products");
+            var pathString2 = Path.Combine(originalDirectory.ToString(), "Products\\" +id.ToString(CultureInfo.CurrentCulture));
+            var pathString3 = Path.Combine(originalDirectory.ToString(), "Products\\" +id.ToString(CultureInfo.CurrentCulture) + "\\Thumbs");
+            var pathString4 = Path.Combine(originalDirectory.ToString(), "Products\\" +id.ToString(CultureInfo.CurrentCulture) + "\\Gallery");
+            var pathString5 = Path.Combine(originalDirectory.ToString(), "Products\\" +id.ToString(CultureInfo.CurrentCulture) + "\\Gallery\\Thumbs");
+            if(!Directory.Exists(pathString1))            
+                Directory.CreateDirectory(pathString1);
+            if (!Directory.Exists(pathString2))
+                Directory.CreateDirectory(pathString2);
+            if (!Directory.Exists(pathString3))
+                Directory.CreateDirectory(pathString3);
+            if (!Directory.Exists(pathString4))
+                Directory.CreateDirectory(pathString4);
+            if (!Directory.Exists(pathString5))
+                Directory.CreateDirectory(pathString5);
+            if (file != null && file.ContentLength > 0)
+            {
+                string ext = file.ContentType.ToLower(CultureInfo.CurrentCulture);
+                if (ext != "image/jpg" &&
+                    ext != "image/jpeg" &&
+                    ext != "image/pjpeg" &&
+                    ext != "image/gif" &&
+                    ext != "image/x-png" &&
+                    ext != "image/png")
+                {
+                    using (Db db = new Db())
+                    {
+                        model.Categories = new SelectList(db.Categories.ToList(), dataValueField: "Id", dataTextField: "Name");
+                        ModelState.AddModelError(key: "", errorMessage: "The image was not uploaded - wrong image extation.");
+                        return View(model);
+                    }
+                }
+
+                string imageName = file.FileName;
+                using (Db db = new Db())
+                {
+                    Product dto = db.Products.Find(id);
+                    dto.ImageName = imageName;
+                    db.SaveChanges();
+                }
+
+                var path = string.Format(CultureInfo.InvariantCulture, $"{pathString2}\\{imageName}"); // оригинальное изображение
+                var path2 = string.Format(CultureInfo.InvariantCulture, $"{pathString3}\\{imageName}");//уменьшенная копия
+                file.SaveAs(path);
+                WebImage img = new WebImage(file.InputStream);
+                img.Resize(width: 200,height: 200);
+                img.Save(path2);
+            }
+           
+            ///////////////////////////////////////////////
+
+            return RedirectToAction("AddProduct");
+        }
+        [HttpGet]
+        
+        public ActionResult Products(int? page, int? catId)
+        {
+            List<ProductVM> listOfProductVM;
+            var pageNumber = page ?? 1;
+            using(Db db = new Db())
+            {
+                listOfProductVM = db.Products.ToArray()
+                                   .Where(x => catId == null || catId == 0 || x.CategoryId == catId)
+                                   .Select(x => new ProductVM(x))
+                                   .ToList();
+                ViewBag.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
+                ViewBag.SelectedCat = catId.ToString();
+            }
+            var onePageOfProducts = listOfProductVM.ToPagedList(pageNumber, 3);
+            ViewBag.onePageOfProducts = onePageOfProducts;
+            return View(listOfProductVM);
         }
     }
 }
