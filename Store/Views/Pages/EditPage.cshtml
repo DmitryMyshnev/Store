@@ -1,10 +1,10 @@
 ﻿@model Store.Models.ViewModels.Pages.PageVM
 
 @{
-    ViewBag.Title = "Edit Product";
+    ViewBag.Title = "Edit Page";
 }
 
-<h2>Edit Product</h2>
+    <h2>Edit Page</h2>
 @if (TempData["SM"] != null)
 {
     <div class="alert alert-success">
@@ -48,11 +48,11 @@
 
     <div class="form-group">
         <div class="offset-2 col">
-            <input type="submit" value="Save" class="btn btn-outline-success" />
+            <input type="submit" value="Save" class="btn btn-success" />
         </div>
     </div>
 </div>
 }
     <div>
-        @Html.ActionLink("Back to Product", "Index")
+        @Html.ActionLink("Back to Page", "Index")
     </div>

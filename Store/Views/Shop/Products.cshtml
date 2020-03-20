@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Store.Models.ViewModels.Pages.PageVM>
+﻿@model IEnumerable<Store.Models.ViewModels.Shop.ProductVM>
 
 @{
     ViewBag.Title = "Products";
@@ -52,19 +52,19 @@
     {
         <tr>
             <td>
-                @product.Name;
+                @product.Name
             </td>
 
             <td>
-                @product.Description;
+                @product.Description
             </td>
 
             <td>
-                @product.Price;
+                @product.Price
             </td>
 
             <td>
-                <a href="/shop/EditProdut/@product.Id">
+                <a href="/shop/EditProduct/@product.Id">
                     @if (product.ImageName == null)
                     {
                         <img src="~/Content/Images/no_image.png" />
@@ -78,7 +78,7 @@
             </td>
             <td>
                 @Html.ActionLink("Edit", "EditProduct", new { id = product.Id }, new { @class = "btn btn-info" })
-                @Html.ActionLink("Delete", "DeleteProduct", new { id = product.Id }, new { @class = "btn btn-danger" })
+                @Html.ActionLink("Delete", "DeleteProduct", new { id = product.Id }, new { @class = "btn btn-danger delete" })
             </td>
         </tr>
     }
@@ -107,7 +107,7 @@
     /* Confirm page deletion */
 
     $("a.delete").click(function () {
-        if (!confirm("Confirm page deletion")) return false;
+        if (!confirm("Confirm product deletion")) return false;
     });
 
     /*-----------------------------------------------------------*/

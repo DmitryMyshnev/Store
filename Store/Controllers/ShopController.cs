@@ -16,7 +16,7 @@ namespace Store.Controllers
     public class ShopController : Controller
     {
         // GET: Shop
-        [HttpGet]
+       
         public ActionResult Categories()
         {
             List<CategoryVM> categoryVMList;
@@ -27,12 +27,13 @@ namespace Store.Controllers
             return View(categoryVMList);
         }
         [HttpGet]
+        
         public ActionResult AddNewCategory()
         {
             return View();
         }
         [HttpPost]
-        [ValidateAntiForgeryTokenAttribute]
+        
         public ActionResult AddNewCategory(string name)
         {
             // string id;
@@ -121,7 +122,7 @@ namespace Store.Controllers
             return View(model);
         }
         [HttpPost]
-        [ValidateAntiForgeryTokenAttribute]
+        
         public ActionResult AddProduct(ProductVM model, HttpPostedFileBase file)
         {
             if(!ModelState.IsValid)
@@ -204,7 +205,7 @@ namespace Store.Controllers
                 var path2 = string.Format(CultureInfo.InvariantCulture, $"{pathString3}\\{imageName}");//уменьшенная копия
                 file.SaveAs(path);
                 WebImage img = new WebImage(file.InputStream);
-                img.Resize(width: 200,height: 200);
+                img.Resize(width: 200, height: 200).Crop(1, 1);
                 img.Save(path2);
             }
            
@@ -230,6 +231,132 @@ namespace Store.Controllers
             var onePageOfProducts = listOfProductVM.ToPagedList(pageNumber, 3);
             ViewBag.onePageOfProducts = onePageOfProducts;
             return View(listOfProductVM);
+        }
+        [HttpGet]
+        public ActionResult  EditProduct(int id)
+        {
+            ProductVM model;
+            using(Db db = new Db())
+            {
+                Product dto = db.Products.Find(id);
+                if(dto == null)
+                {
+                    return Content("That product does not exist.");
+                }
+                model = new ProductVM(dto);
+                model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
+                model.GalleryImages = Directory
+                    .EnumerateFiles(Server.MapPath("~/Images/Uploads/Products/" + id + "/Gallery/Thumbs"))
+                    .Select(fn => Path.GetFileName(fn));
+            }
+            return View(model);
+        }
+        
+        [HttpPost]
+        public ActionResult EditProduct(ProductVM model, HttpPostedFileBase file)
+        {
+            int id = model.Id;
+            using (Db db = new Db())
+            {
+                model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
+            }
+           
+            model.GalleryImages = Directory
+                .EnumerateFiles(Server.MapPath("~/Images/Uploads/Products/" + id + "/Gallery/Thumbs"))
+                .Select(fn => Path.GetFileName(fn));
+            if(!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            using (Db db = new Db())
+            { 
+               if(db.Products.Where(x =>x.Id != id).Any(x =>x.Name == model.Name))
+                {
+                    ModelState.AddModelError("", "That product name is taken!");
+                    return View(model);
+                }
+            }
+            using (Db db = new Db())
+            {
+                Product dto = db.Products.Find(id);
+                dto.Name = model.Name;
+                dto.Slug = model.Name.Replace(" ", "-").ToLower(CultureInfo.CurrentCulture);
+                dto.Description = model.Description;
+                dto.Price = model.Price;
+                dto.CategoryId = model.CategoryId;
+                dto.ImageName = model.ImageName;
+                CategoryProduct cat = db.Categories.FirstOrDefault(x => x.Id == model.CategoryId);
+                dto.CategoryName = cat.Name;
+                db.SaveChanges();
+            }
+                TempData["SM"] = "You have edited the product!";
+
+            if (file != null && file.ContentLength > 0)
+            {
+                string ext = file.ContentType.ToLower(CultureInfo.CurrentCulture);
+                if (ext != "image/jpg" &&
+              ext != "image/jpeg" &&
+              ext != "image/pjpeg" &&
+              ext != "image/gif" &&
+              ext != "image/x-png" &&
+              ext != "image/png")
+                {
+                    using (Db db = new Db())
+                    {
+                        ModelState.AddModelError(key: "", errorMessage: "The image was not uploaded - wrong image extation.");
+                        return View(model);
+                    }
+                }
+
+                var originalDirectory = new DirectoryInfo(string.Format(CultureInfo.InvariantCulture, $"{Server.MapPath(@"\")}Images\\Uploads"));
+
+                var pathString1 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString(CultureInfo.CurrentCulture));
+                var pathString2 = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString(CultureInfo.CurrentCulture) + "\\Thumbs");
+
+                DirectoryInfo di1 = new DirectoryInfo(pathString1);
+                DirectoryInfo di2 = new DirectoryInfo(pathString2);
+                foreach (var item in di1.GetFiles())
+                {
+                    item.Delete();
+                }
+                foreach (var item in di2.GetFiles())
+                {
+                    item.Delete();
+                }
+                string imageName = file.FileName;
+                using (Db db = new Db())
+                {
+                    Product dto = db.Products.Find(id);
+                    dto.ImageName = imageName;
+                    db.SaveChanges();
+                }
+                var path = string.Format(CultureInfo.InvariantCulture, $"{pathString1}\\{imageName}"); // оригинальное изображение
+                var path2 = string.Format(CultureInfo.InvariantCulture, $"{pathString2}\\{imageName}");//уменьшенная копия
+                file.SaveAs(path);
+                WebImage img = new WebImage(file.InputStream);
+                img.Resize(width: 200, height: 200).Crop(1,1);
+                img.Save(path2);
+            }
+
+
+
+            return RedirectToAction("EditProduct");
+        }
+        public ActionResult DeleteProduct(int id)
+        {
+            using (Db db = new Db())
+            {
+                Product dto = db.Products.Find(id);
+                db.Products.Remove(dto);
+                db.SaveChanges();
+            }
+            var originalDirectory = new DirectoryInfo(string.Format(CultureInfo.InvariantCulture, $"{Server.MapPath(@"\")}Images\\Uploads"));          
+            var pathString = Path.Combine(originalDirectory.ToString(), "Products\\" + id.ToString(CultureInfo.CurrentCulture));
+            if(Directory.Exists(pathString))
+            {
+                Directory.Delete(pathString,true);
+            }
+            return RedirectToAction("Products");
         }
     }
 }

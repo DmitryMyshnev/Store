@@ -116,7 +116,7 @@ namespace Store.Controllers
             return RedirectToAction("EditProduct");
         }
         [HttpGet]
-        public ActionResult PagetDetails(int id)
+        public ActionResult PageDetails(int id)
         {
             PageVM model;
             using (Db db = new Db())
